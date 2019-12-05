@@ -1,0 +1,4 @@
+Click
+pymongo
+pandas
+uiautomator2

@@ -1,0 +1,4 @@
+
+        [console_scripts]
+        boss=engine:cli
+    
