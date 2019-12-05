@@ -20,21 +20,36 @@
     以json格式录入到jobs.json中
     输入title 并保证 title要在boss直聘上找得到
     保证下拉列表里有内容
-    执行
-    jobs.json
+    ![]('select.jpg')
+
+    ['jobs.json解释']('https://github.com/carlos121493/boss-auto#jobs.json%E8%A7%A3%E9%87%8A')
     ```boss import-jobs -f jobs.json```
 
-3. 早上执行boss add_jobs 将录入的职位加入, 会将数据库的职位加入到boss直聘中
+5. 早上执行boss add_jobs 将录入的职位加入, 会将数据库的职位加入到boss直聘中
     ``` boss add-jobs```
 
-4. 每隔大概2~3个小时，批量检查小红点的用户是否发送要微信，手机号信息
+6. 每隔大概2~3个小时，批量检查小红点的用户是否发送要微信，手机号信息
     ``` boss boss-list```
 
-5. 晚上将所有信息整理到数据库中（每天执行一次，因为用户以时间维度加入到数据库中，防止重复）
+7. 晚上将所有信息整理到数据库中（每天执行一次，因为用户以时间维度加入到数据库中，防止重复）
     ``` boss boss-list -c```
 
-6. 数据录入好后导出到当前目录jobs.xlsx中
+8. 数据录入好后导出到当前目录jobs.xlsx中
     ``` boss export-excel```
+
+---
+
+### jobs.json解释
+
+1. title 应聘职位
+2. desc 应聘说明
+3. need 应聘要求
+4. from 需求来源
+5. low 最低工资（可选）
+6. high 最高工资 (可选)
+7. location （可选,默认不写千樱信息总部, 填写可写成列表location: ['省市', '区', '详细地址']如 location: ['上海', '浦东新区', '2-1-302']）
+8. hot 是否是热门职位（要付费，不删除）
+
 ---
 
 ### 进阶
