@@ -50,6 +50,8 @@ class Engine:
     def check_list(self, checkInfo):
         d = self.d
         mongo = BossMongo()
+        d(resourceId="com.hpbr.bosszhipin:id/ll_tab_3").click()
+        time.sleep(1)
         filters = self.get_filters()
         print(filters)
         if len(filters):
