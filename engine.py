@@ -76,24 +76,28 @@ def cli():
     pass
 
 @click.command()
+@click.option('--input', '-f', default='jobs.json', type=click.File('r', 'utf-8'))
+def import_jobs(input):
+    '''将文件中的内容加入到数据库中'''
+    engine.db_2_jobs(json.loads(input.read()))
+
+@click.command()
 def add_jobs():
+    '''将数据库的jobs加入到boss直聘中'''
     engine.add_jobs()
 
 @click.command()
 @click.option('--check', '-c', type=bool, default=False)
 def boss_list(check):
+    '''过一遍列表，默认只看小红点内的. 传入-c=True，将所有数据加入到数据库中'''
     engine.check_list(check)
-    # if check:
-    #     engine.remove_jobs()
+        
 
 @click.command()
 def export_excel():
+    '''将非火热职位的内容插到数据库中，并将职位删除， 将当天的职位导出到本地的jobs.xlsx中'''
+    engine.remove_jobs()
     engine.export_2_excel()
-
-@click.command()
-@click.option('--input', '-f', default='jobs.json', type=click.File('r', 'utf-8'))
-def import_jobs(input):
-    engine.db_2_jobs(json.loads(input.read()))
 
 cli.add_command(add_jobs)
 cli.add_command(boss_list)
