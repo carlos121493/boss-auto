@@ -79,6 +79,12 @@ class Engine:
             mongo.save_excel(f, items)
         else:
             print('暂时还未抓取到需求方的招聘职位')
+    
+    @decTime
+    def add_detail(self):
+        detail = Detail(self.d)
+        detail.saveDetail()
+        return detail.getInfo()
 
 engine = Engine()
 @click.group()
@@ -104,8 +110,8 @@ def boss_list(check):
 
 @click.command()
 def save_detail():
-    # detail = Detail(engind.d)
-    pass
+    '''保存单个用户，确保当前页在单个用户上'''
+    engine.add_detail()
 
 @click.command()
 def remove_jobs():
@@ -122,6 +128,7 @@ def export_excel(f):
 
 cli.add_command(add_jobs)
 cli.add_command(boss_list)
+cli.add_command(save_detail)
 cli.add_command(export_excel)
 cli.add_command(remove_jobs)
 cli.add_command(import_jobs)
