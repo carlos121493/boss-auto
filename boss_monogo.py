@@ -12,11 +12,9 @@ import pandas as pd
 lastDay = time.mktime((datetime.date.today() - datetime.timedelta(1)).timetuple())
 now = time.mktime(datetime.date.today().timetuple())
 root = os.getcwd()
-excelPath = os.path.join(root, 'jobs.xlsx')
+
 
 class BossMongo:
-    writer = pd.ExcelWriter(excelPath)
-
     def __init__(self):
         client = MongoClient(host='127.0.0.1', port=27017)
         db = client['employ']
@@ -36,16 +34,26 @@ class BossMongo:
           print(str(employees))
 
     def get_employees(self, time):
-        return self.jobsCollection.aggregate([{
+        return self.jobsCollection.aggregate([{  
+           '$addFields': {
+                'titles': {
+                    '$cond': {
+                        'if': {'$ifNull': ['$sub_title', False]},
+                        'then': {'$concatArrays': [['$title'], '$sub_title']},
+                        'else': ['$title']
+                    }
+                }
+           },
+        },{
           '$lookup': {
                 'from': 'employees',
-                'let': {'end_type': '$endType', 'title': '$title'},
+                'let': {'end_type': '$endType', 'titles': '$titles'},
                 'pipeline': [{
                     '$match': {
                         '$expr': {
                             '$and': [
                                 {'$eq': ['$time', time]},
-                                {'$or': [{'$eq': ['$job_type', '$$end_type']}, {'$eq': ['$job_type', '$$title']}]}
+                                {'$or': [{'$eq': ['$job_type', '$$end_type']}, {'$in': ['$job_type', '$$titles']}]}
                             ]
                         }
                     }
@@ -84,14 +92,16 @@ class BossMongo:
                 }
         }])
 
-    def write_to_excel(self, sheetName, data):
-        data.to_excel(self.writer, sheet_name=sheetName, startcol=0, index=False)
-
     def rename_columns(self, data):
         return data.rename(columns={"name": "姓名", "sex": "性别", "age": "年龄", "tagInfo": "标签", "wx": "微信", "phone": "手机", "desc": "描述", "expect_salary": "期望薪资", "companyInfo": "职业经历", "educate_school": "毕业院校", "educate_period": "上学时间", "educate_major": "主修专业", "educate_level": "最高学历"})
 
-    def save_excel(self):
-        self.writer.save()
+    def save_excel(self, f, datas):
+        excelPath = os.path.join(root, 'jobs-{0}.xlsx'.format(f))
+        writer = pd.ExcelWriter(excelPath)
+        for (sheetName, data) in datas:
+            print(sheetName, data)
+            data.to_excel(writer, sheet_name=sheetName, startcol=0, index=False)
+        writer.save()
 
     def find_last(self):
         return self.employCollection.find({'time': now, 'asked': True, 'job_type': {'$ne': 'Java'}}, { 'job_id': 0, 'time':0, 'asked': 0, '_id': 0})
@@ -119,7 +129,7 @@ if __name__ == "__main__":
     # mongo.save_excel()
     
     # 插入jobs
-    jobFile = os.path.relpath('jobs.json', '.')
-    with open(jobFile, encoding='utf-8') as f:
-        jobs = json.loads(f.read())
-        mongo.insert_jobs(jobs)
+    # jobFile = os.path.relpath('jobs.json', '.')
+    # with open(jobFile, encoding='utf-8') as f:
+    #     jobs = json.loads(f.read())
+    #     mongo.insert_jobs(jobs)

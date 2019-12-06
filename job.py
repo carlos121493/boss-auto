@@ -16,6 +16,11 @@ class Job:
         job.click()
         time.sleep(1)
         browser(resourceId='com.hpbr.bosszhipin:id/btn_reset').click()
+        pos = browser(resourceId="com.hpbr.bosszhipin:id/tv_positive")
+        if pos.exists:
+            pos.click()
+            browser.press('back')
+            return
         time.sleep(1)
         browser(resourceId="com.hpbr.bosszhipin:id/mNestScrollView").scroll.vert.toEnd()
         browser(resourceId="com.hpbr.bosszhipin:id/btn_confirm").click()
@@ -28,24 +33,27 @@ class Job:
         return job['title'] == job_name 
 
     def clean(self):
-        db_jobs = self.get_jobs_from_db()
         browser = self.browser
-        browser(resourceId="com.hpbr.bosszhipin:id/ll_tab_4").click()
-        browser(resourceId="com.hpbr.bosszhipin:id/tv_sub_title", text="管理职位").click()
-        time.sleep(2)
-        jobs = browser(resourceId='com.hpbr.bosszhipin:id/lv_ptr').child(className='android.view.ViewGroup')
-        for job in jobs:
-            time.sleep(4)
-            job_title = job.child(resourceId="com.hpbr.bosszhipin:id/tv_job_name").get_text()
-            # 获取job 信息
-            job_db_item = list(filter(lambda j: self.filter_job(j, job_title), db_jobs))
-            if len(job_db_item) != 0:
-                job_db_item = job_db_item[0]
-            else:
-                job_db_item = {}
-            if 'hot' in job_db_item.keys() and job_db_item['hot']:
-                continue
-            self.delete_item(job)
+        try:
+            db_jobs = self.get_jobs_from_db()
+            browser(resourceId="com.hpbr.bosszhipin:id/ll_tab_4").click()
+            browser(resourceId="com.hpbr.bosszhipin:id/tv_sub_title", text="管理职位").click()
+            time.sleep(2)
+            jobs = browser(resourceId='com.hpbr.bosszhipin:id/lv_ptr').child(className='android.view.ViewGroup')
+            for job in jobs:
+                time.sleep(4)
+                job_title = job.child(resourceId="com.hpbr.bosszhipin:id/tv_job_name").get_text()
+                # 获取job 信息
+                job_db_item = list(filter(lambda j: self.filter_job(j, job_title), db_jobs))
+                if len(job_db_item) != 0:
+                    job_db_item = job_db_item[0]
+                else:
+                    job_db_item = {}
+                if 'hot' in job_db_item.keys() and job_db_item['hot']:
+                    continue
+                self.delete_item(job)
+        except UiObjectNotFoundError:
+            browser.press('back')
 
     def get_jobs_from_db(self):
         lists = list(self.monogo.find_jobs())

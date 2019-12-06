@@ -5,14 +5,8 @@ from detail import Detail
 from boss_monogo import BossMongo
 from uiautomator2.exceptions import UiObjectNotFoundError
 
-# now = time.mktime(datetime.date.today().timetuple())
-now = time.mktime(datetime.date(2019,12,4).timetuple())
-
+now = time.mktime(datetime.date.today().timetuple())
 class List(Base):
-    currentList = []
-    lastList = []
-    allList = []
-    alldetails = []
 
     def __init__(self, browser, name, job_id, checkInfo = True):
         self.browser = browser
@@ -22,6 +16,11 @@ class List(Base):
           browser(resourceId="com.hpbr.bosszhipin:id/confirm").click()
           self.container = browser(resourceId='com.hpbr.bosszhipin:id/contact_ll')
           self.firstName = self.getFirstName()
+          
+        self.currentList = []
+        self.lastList = []
+        self.allList = []
+        self.alldetails = []
         self.checkInfo = checkInfo
         self.time = now
         self.job_id = job_id
@@ -56,11 +55,9 @@ class List(Base):
         try:
             detail = Detail(self.browser, self.checkInfo)
             info = detail.getInfo()
-            print(info)
             if len(info.keys()):
                 info['job_id'] = self.job_id
                 info['time'] = self.time
-                print(info)
                 self.alldetails.append(info)
         except UiObjectNotFoundError:
             return ''
@@ -167,8 +164,9 @@ if __name__ == "__main__":
     # print(list.getInfos())
     # mongo.insert_employees(list.getInfos())
     mongo = BossMongo()
-    lists = List(d, '高级测试专家', '5de078141e7c2bb87fe6b44c', checkInfo=True)
+    lists = List(d, '管培生', '5de078141e7c2bb87fe6b44c', checkInfo=True)
     infos = lists.getInfos()
+    print(len(infos))
     if len(infos):
         mongo.insert_employees(infos)
     d.press("back")

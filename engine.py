@@ -51,26 +51,34 @@ class Engine:
         d = self.d
         mongo = BossMongo()
         d(resourceId="com.hpbr.bosszhipin:id/ll_tab_3").click()
-        time.sleep(1)
+        time.sleep(2)
         filters = self.get_filters()
         print(filters)
+        items = []
         if len(filters):
             for filt in filters:
                 lists = List(d, filt, '5de078141e7c2bb87fe6b44c', checkInfo=checkInfo)
                 infos = lists.getInfos()
+                print('{0}检查数量: {1}'.format(filt, len(infos)))
                 if len(infos) and checkInfo:
-                    mongo.insert_employees(infos)
+                    items.extend(infos)
                 d.press("back")
                 time.sleep(3)
-
-    def export_2_excel(self):
+        if checkInfo and len(items):
+            mongo.insert_employees(items)
+        
+    def export_2_excel(self, f):
         mongo = BossMongo()
         jobs = mongo.get_employees(now)
+        items = []
         for job in jobs:
-            print(mongo.rename_columns(pd.DataFrame(job['employees'])))
-            mongo.write_to_excel(job['title'], mongo.rename_columns(pd.DataFrame(job['employees'])))
-        mongo.save_excel()
-
+            if job['from'] != f:
+                continue
+            items.append((job['title'], mongo.rename_columns(pd.DataFrame(job['employees']))))
+        if len(items) != 0:
+            mongo.save_excel(f, items)
+        else:
+            print('暂时还未抓取到需求方的招聘职位')
 
 engine = Engine()
 @click.group()
@@ -93,18 +101,32 @@ def add_jobs():
 def boss_list(check):
     '''过一遍列表，默认只看小红点内的. 传入-c=True，将所有数据加入到数据库中'''
     engine.check_list(check)
-        
 
 @click.command()
-def export_excel():
-    '''将非火热职位的内容插到数据库中，并将职位删除， 将当天的职位导出到本地的jobs.xlsx中'''
+def save_detail():
+    # detail = Detail(engind.d)
+    pass
+
+@click.command()
+def remove_jobs():
+    '''删除所有非热门职位'''
     engine.remove_jobs()
-    engine.export_2_excel()
+
+@click.command()
+@click.option('-f')
+def export_excel(f):
+    '''将当天的职位导出到本地的jobs.xlsx中'''
+    f = '兔子'
+    if f is None:
+        return print('请输入需求供应方')
+    engine.export_2_excel(f)
 
 cli.add_command(add_jobs)
 cli.add_command(boss_list)
 cli.add_command(export_excel)
+cli.add_command(remove_jobs)
 cli.add_command(import_jobs)
 
 if __name__ == "__main__":
-    cli()
+    # cli()
+    export_excel()

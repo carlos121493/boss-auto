@@ -1,5 +1,6 @@
 import time
 import re
+from boss_monogo import BossMongo
 from base import Base
 
 
@@ -87,7 +88,14 @@ class Detail(Base):
                     company_names.append(compnanyItem['experience_co'])
                     companys.append(compnanyItem)
                 
-            educate = companys.pop()
+            if len(companys):
+             educate = companys.pop()
+            else:
+             educate = {
+                 'experience_co': '',
+                 'experience_period': '',
+                 'experience_major': '',
+             }
                         
             return {
                 "name": name,
@@ -149,7 +157,7 @@ class Detail(Base):
             return True
         elif 'asked' in keys or 'phone' in keys or 'wx' in keys:
             return True
-
+        
     def getInfo(self):
         return self.infos
 
