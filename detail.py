@@ -172,8 +172,10 @@ class Detail(Base):
 
     def saveDetail(self):
         info = self.getInfo()
+        keys = info.keys()
         info['time'] = time.mktime(datetime.date.today().timetuple())
-        self.mongo.insert_employees([info])
+        if 'asked' in keys or 'wx' in keys or 'phone' in keys:
+            self.mongo.insert_employees([info])
 
     def start(self):
         time.sleep(2)
