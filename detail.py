@@ -1,4 +1,5 @@
 import time
+import datetime
 import re
 from boss_monogo import BossMongo
 from base import Base
@@ -6,6 +7,7 @@ from base import Base
 
 class Detail(Base):
     def __init__(self, browser, checkInfo=True):
+        self.mongo = BossMongo()
         self.browser = browser
         self.container = browser(resourceId="com.hpbr.bosszhipin:id/lv_chat")
         self.container.scroll.vert.toEnd()
@@ -69,6 +71,12 @@ class Detail(Base):
           "experience_major": experience_major
         }
 
+    def findJobId(self):
+        d = self.browser
+        title = d(resourceId='com.hpbr.bosszhipin:id/tv_expect_position').get_text()
+        salaries = d(resourceId='com.hpbr.bosszhipin:id/tv_expect_salary').get_text()
+        return self.mongo.find_job_id(title, salaries)
+
     def getBaseInfo(self, items):
         item = items.child(resourceId='com.hpbr.bosszhipin:id/ll_head')
         if item.exists:
@@ -108,7 +116,8 @@ class Detail(Base):
                 "educate_school": educate['experience_co'],
                 "educate_period": educate['experience_period'],
                 "educate_major": educate['experience_major'],
-                "job_type": self.getText(self.browser.xpath('//*[@resource-id="com.hpbr.bosszhipin:id/tv_expect_position"]'))
+                "job_type": self.getText(self.browser.xpath('//*[@resource-id="com.hpbr.bosszhipin:id/tv_expect_position"]')),
+                "job_id": self.findJobId() # fixme之后筛选通过jobId 12月6日起
             }
         else:
             return {}
@@ -161,6 +170,11 @@ class Detail(Base):
     def getInfo(self):
         return self.infos
 
+    def saveDetail(self):
+        info = self.getInfo()
+        info['time'] = time.mktime(datetime.date.today().timetuple())
+        self.mongo.insert_employees([info])
+
     def start(self):
         time.sleep(2)
         self.scroll()
@@ -174,3 +188,4 @@ if __name__ == "__main__":
     d.wait_timeout = 3.0
     detail = Detail(d)
     print(detail.getInfo())
+    detail.saveDetail()

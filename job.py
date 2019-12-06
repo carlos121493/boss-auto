@@ -3,6 +3,7 @@ import random
 import math
 import re
 from boss_monogo import BossMongo
+from uiautomator2.exceptions import UiObjectNotFoundError
 
 
 class Job:
@@ -63,6 +64,10 @@ class Job:
         if 'type' not in resource.keys():
             [jobType, subType, endType] = types
             self.monogo.update_job({'title': resource['title']}, {'type': jobType, 'subType': subType, 'endType': endType})
+
+    def update_prices(self, resource):
+        salaries = d(resourceId="com.hpbr.bosszhipin:id/tv_salary_content").get_text()
+        self.monogo.update_job({'title': resource['title']}, {'salaries': salaries})
 
     def choose_loc(self, resource):
         d = self.browser
@@ -190,6 +195,7 @@ class Job:
         time.sleep(1)
         self.choose_select(resource)
         time.sleep(1)
+        self.update_prices(resource)
         # 职位描述
         d(resourceId="com.hpbr.bosszhipin:id/content", text="请填写职位描述").click()
         time.sleep(1)

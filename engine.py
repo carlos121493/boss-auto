@@ -57,7 +57,7 @@ class Engine:
         items = []
         if len(filters):
             for filt in filters:
-                lists = List(d, filt, '5de078141e7c2bb87fe6b44c', checkInfo=checkInfo)
+                lists = List(d, filt, checkInfo=checkInfo)
                 infos = lists.getInfos()
                 print('{0}检查数量: {1}'.format(filt, len(infos)))
                 if len(infos) and checkInfo:

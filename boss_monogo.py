@@ -9,10 +9,8 @@ import os
 import datetime
 import pandas as pd
 
-lastDay = time.mktime((datetime.date.today() - datetime.timedelta(1)).timetuple())
 now = time.mktime(datetime.date.today().timetuple())
 root = os.getcwd()
-
 
 class BossMongo:
     def __init__(self):
@@ -146,6 +144,10 @@ class BossMongo:
     @CachedCalled()
     def find_job(self, endType):
         return list(self.jobsCollection.find({'endType': endType}))
+
+    @CachedCalled()
+    def find_job_id(self, title, salaries):
+        return str(list(self.jobsCollection.find({'title': title, 'salaries': salaries}, {'_id': 1}))[0]['_id'])
 
     def output(self, data):
       # writer

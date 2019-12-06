@@ -8,7 +8,7 @@ from uiautomator2.exceptions import UiObjectNotFoundError
 now = time.mktime(datetime.date.today().timetuple())
 class List(Base):
 
-    def __init__(self, browser, name, job_id, checkInfo = True):
+    def __init__(self, browser, name, checkInfo = True):
         self.browser = browser
         if name:
           browser(resourceId="com.hpbr.bosszhipin:id/filter_tv").click()
@@ -23,7 +23,6 @@ class List(Base):
         self.alldetails = []
         self.checkInfo = checkInfo
         self.time = now
-        self.job_id = job_id
         self.container.scroll.vert.toEnd()
         time.sleep(2)
         self.start()
@@ -56,7 +55,6 @@ class List(Base):
             detail = Detail(self.browser, self.checkInfo)
             info = detail.getInfo()
             if len(info.keys()):
-                info['job_id'] = self.job_id
                 info['time'] = self.time
                 self.alldetails.append(info)
         except UiObjectNotFoundError:
@@ -90,12 +88,12 @@ class List(Base):
 
 
 class ListAll(List):
-    def __init__(self, browser, name, job_id, checkInfo=True): 
+    def __init__(self, browser, name, checkInfo=True): 
         self.container = browser(className='android.widget.ExpandableListView')
         mongo = BossMongo()
         self.names = [stack['name'] for stack in list(mongo.employCollection.find({}, { '_id': 0, 'name': 1 }))]
         self.firstName = '筛选'
-        super().__init__(browser, name, job_id, checkInfo)
+        super().__init__(browser, name, checkInfo)
 
     def getItem(self):
         '''识别每一项'''
@@ -164,7 +162,7 @@ if __name__ == "__main__":
     # print(list.getInfos())
     # mongo.insert_employees(list.getInfos())
     mongo = BossMongo()
-    lists = List(d, '管培生', '5de078141e7c2bb87fe6b44c', checkInfo=True)
+    lists = List(d, '管培生', checkInfo=True)
     infos = lists.getInfos()
     print(len(infos))
     if len(infos):
