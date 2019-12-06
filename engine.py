@@ -9,6 +9,7 @@ import os
 import json
 import datetime
 import pandas as pd
+from util import decTime
 
 now = time.mktime(datetime.date.today().timetuple())
 
@@ -47,6 +48,7 @@ class Engine:
         d(resourceId="com.hpbr.bosszhipin:id/confirm").click()
         return filter_list
         
+    @decTime
     def check_list(self, checkInfo):
         d = self.d
         mongo = BossMongo()
