@@ -69,11 +69,9 @@ class Engine:
         
     def export_2_excel(self, f):
         mongo = BossMongo()
-        jobs = mongo.get_employees(now)
+        jobs = mongo.get_from_employees(f)
         items = []
         for job in jobs:
-            if job['from'] != f:
-                continue
             items.append((job['title'], mongo.rename_columns(pd.DataFrame(job['employees']))))
         if len(items) != 0:
             mongo.save_excel(f, items)
@@ -116,7 +114,6 @@ def remove_jobs():
 @click.option('-f')
 def export_excel(f):
     '''将当天的职位导出到本地的jobs.xlsx中'''
-    f = '兔子'
     if f is None:
         return print('请输入需求供应方')
     engine.export_2_excel(f)
@@ -128,5 +125,4 @@ cli.add_command(remove_jobs)
 cli.add_command(import_jobs)
 
 if __name__ == "__main__":
-    # cli()
-    export_excel()
+    cli()

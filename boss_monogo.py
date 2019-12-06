@@ -33,8 +33,18 @@ class BossMongo:
         except BulkWriteError:
           print(str(employees))
 
-    def get_employees(self, time):
-        return self.jobsCollection.aggregate([{  
+    def get_employees(self, times=now, cond=None):
+        match_filter = [{'$or': [{'$eq': ['$job_type', '$$end_type']}, {'$in': ['$job_type', '$$titles']}]}]
+        
+        if isinstance(times, list):
+            low = times[0]
+            match_filter.append({'$gte': ['$time', low]})
+            if len(times) > 1:
+                match_filter.append({'$lte': ['$time', times[1]]})
+        else:
+            match_filter.append({'$eq': ['$time', times]})
+        
+        conditions = [{  
            '$addFields': {
                 'titles': {
                     '$cond': {
@@ -44,17 +54,15 @@ class BossMongo:
                     }
                 }
            },
-        },{
+        },
+        {
           '$lookup': {
                 'from': 'employees',
                 'let': {'end_type': '$endType', 'titles': '$titles'},
                 'pipeline': [{
                     '$match': {
                         '$expr': {
-                            '$and': [
-                                {'$eq': ['$time', time]},
-                                {'$or': [{'$eq': ['$job_type', '$$end_type']}, {'$in': ['$job_type', '$$titles']}]}
-                            ]
+                            '$and': match_filter
                         }
                     }
                     },
@@ -90,7 +98,33 @@ class BossMongo:
                 ],
                 'as': 'employees'
                 }
-        }])
+        }]
+        if cond is not None:
+            conditions.insert(1, cond)
+        return self.jobsCollection.aggregate(conditions)
+
+    def get_period(self, delta):
+        return time.mktime((datetime.date.today() - datetime.timedelta(delta)).timetuple())
+
+    def create_periods(self, times):
+        if isinstance(times, int):
+            return [times]
+        elif isinstance(times, float):
+            return times
+
+    def get_job_employees(self, jobType, times=now):
+        return self.get_employees(self.create_periods(times), {
+            '$match': {
+                '$expr': {'$in': [jobType, '$titles']}
+            }
+        })
+
+    def get_from_employees(self, f, times=now):
+        return self.get_employees(self.create_periods(times), {
+            '$match': {
+                'from': f
+            }
+        })
 
     def rename_columns(self, data):
         return data.rename(columns={"name": "姓名", "sex": "性别", "age": "年龄", "tagInfo": "标签", "wx": "微信", "phone": "手机", "desc": "描述", "expect_salary": "期望薪资", "companyInfo": "职业经历", "educate_school": "毕业院校", "educate_period": "上学时间", "educate_major": "主修专业", "educate_level": "最高学历"})
@@ -99,7 +133,6 @@ class BossMongo:
         excelPath = os.path.join(root, 'jobs-{0}.xlsx'.format(f))
         writer = pd.ExcelWriter(excelPath)
         for (sheetName, data) in datas:
-            print(sheetName, data)
             data.to_excel(writer, sheet_name=sheetName, startcol=0, index=False)
         writer.save()
 
@@ -120,13 +153,10 @@ class BossMongo:
 
 
 if __name__ == "__main__":
-    mongo = BossMongo()
+    pass
     # 保存到excel
-    # jobs = mongo.get_employees(now)
-    # for job in jobs:
-    #     print(mongo.rename_columns(pd.DataFrame(job['employees'])))
-    #     mongo.write_to_excel(job['title'], mongo.rename_columns(pd.DataFrame(job['employees'])))
-    # mongo.save_excel()
+    # employees = mongo.employCollection.find({'job_type': {'$in': ['管培生', '实习生', '外卖骑手']}})
+    # mongo.save_excel('xiao', [('外卖骑手', mongo.rename_columns(pd.DataFrame(list(employees))))])
     
     # 插入jobs
     # jobFile = os.path.relpath('jobs.json', '.')
