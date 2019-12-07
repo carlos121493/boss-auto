@@ -154,4 +154,4 @@ cli.add_command(check_one_list)
 
 if __name__ == "__main__":
     cli()
-    # engine.check_list(False)
+    # engine.add_detail()

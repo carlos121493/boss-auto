@@ -27,7 +27,7 @@ class BossMongo:
         self.jobsCollection.update_one(query, {'$set': new})
 
     def update_employ(self, employee):
-        self.employCollection.update_one({ 'title': employee['name'], time: employee['time']}, employee, true)
+        self.employCollection.update_one({'title': employee['name'], 'time': employee['time']}, {'$set': employee}, True)
 
     def insert_employees(self, employees):
         try:
