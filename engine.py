@@ -49,7 +49,13 @@ class Engine:
         filter_list = [item.get_text() for item in items if item.get_text() != '全部']
         d(resourceId="com.hpbr.bosszhipin:id/confirm").click()
         return filter_list
-        
+    
+    @decTime
+    def check_one_list(self):
+        d = self.d
+        lists = List(d)
+        print('检查数量: {0}'.format(len(lists.getInfos())))
+
     @decTime
     def check_list(self, checkInfo):
         d = self.d
@@ -117,6 +123,11 @@ def save_detail():
     engine.add_detail()
 
 @click.command()
+def check_one_list():
+    '''检查一个列表'''
+    engine.check_one_list()
+
+@click.command()
 def remove_jobs():
     '''删除所有非热门职位'''
     engine.remove_jobs()
@@ -135,6 +146,8 @@ cli.add_command(save_detail)
 cli.add_command(export_excel)
 cli.add_command(remove_jobs)
 cli.add_command(import_jobs)
+cli.add_command(check_one_list)
 
 if __name__ == "__main__":
-    cli()
+    # cli()
+    check_one_list()

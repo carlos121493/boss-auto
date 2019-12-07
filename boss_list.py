@@ -8,12 +8,14 @@ from uiautomator2.exceptions import UiObjectNotFoundError
 now = time.mktime(datetime.date.today().timetuple())
 class List(Base):
 
-    def __init__(self, browser, name, checkInfo = True):
+    def __init__(self, browser, name=None, checkInfo = False):
         self.browser = browser
         if name:
           browser(resourceId="com.hpbr.bosszhipin:id/filter_tv").click()
           browser(resourceId="com.hpbr.bosszhipin:id/cb_selector", text=name).click()
           browser(resourceId="com.hpbr.bosszhipin:id/confirm").click()
+          
+        if self.container is None:
           self.container = browser(resourceId='com.hpbr.bosszhipin:id/contact_ll')
           self.firstName = self.getFirstName()
           
@@ -44,6 +46,11 @@ class List(Base):
         self.currentList = []
 
     def checkInvalide(self, name, item):
+        # 不是今天的数据不管
+        timeInfo = item.child(resourceId='com.hpbr.bosszhipin:id/tv_time').get_text()
+        if ':' not in timeInfo:
+            return True
+
         # 只看红点模式下不管
         child = item.child(resourceId='com.hpbr.bosszhipin:id/tv_not_read_count')
         if self.checkInfo is False and bool(child.exists) is False:
@@ -108,7 +115,7 @@ class ListAll(List):
         child = item.child(resourceId='com.hpbr.bosszhipin:id/tv_none_read')
         if self.checkInfo is False and bool(child.exists) is False:
             return True
-        return super().checkInvalide(name, item)
+        return super().checkInvalide(name, item) 
 
     def getDetail(self):
         items = self.getItem()

@@ -3,8 +3,8 @@ from uiautomator2.exceptions import UiObjectNotFoundError
 import time
 
 class Base:
-    container = ''
-    browser = ''
+    container = None
+    browser = None
 
     def getText(self, item):
         try:

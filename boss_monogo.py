@@ -146,7 +146,7 @@ class BossMongo:
         return list(self.jobsCollection.find({'endType': endType}))
 
     @CachedCalled()
-    def find_job_id(self, title, salaries):
+    def find_job_id(self, title, salaries): # fixme 查询sub_title
         return str(list(self.jobsCollection.find({'title': title, 'salaries': salaries}, {'_id': 1}))[0]['_id'])
 
     def output(self, data):

@@ -66,6 +66,7 @@ class Job:
             self.monogo.update_job({'title': resource['title']}, {'type': jobType, 'subType': subType, 'endType': endType})
 
     def update_prices(self, resource):
+        d = self.browser
         salaries = d(resourceId="com.hpbr.bosszhipin:id/tv_salary_content").get_text()
         self.monogo.update_job({'title': resource['title']}, {'salaries': salaries})
 
