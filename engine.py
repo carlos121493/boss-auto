@@ -149,5 +149,4 @@ cli.add_command(import_jobs)
 cli.add_command(check_one_list)
 
 if __name__ == "__main__":
-    # cli()
-    check_one_list()
+    cli()

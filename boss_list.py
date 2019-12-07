@@ -33,8 +33,11 @@ class List(Base):
     def getFirstName(self):
         self.container.scroll.vert.toBeginning()
         items = self.getItem()
-        first_item = items[0].child(resourceId='com.hpbr.bosszhipin:id/tv_name')
-        return first_item.get_text() if first_item.exists else ''
+        try:
+            first_item = items[0].child(resourceId='com.hpbr.bosszhipin:id/tv_name')
+            return first_item.get_text() if first_item.exists else ''
+        except
+            return ''
 
     def getItem(self):
         '''识别每一项'''
@@ -85,6 +88,9 @@ class List(Base):
 
     def isEnding(self):
         '''结束'''
+        items = self.getItem()
+        if len(items) == 0:
+            return True
         return True if self.browser(text=self.firstName).exists else False
 
     def getInfos(self):
