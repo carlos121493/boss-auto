@@ -146,8 +146,13 @@ class BossMongo:
         return list(self.jobsCollection.find({'endType': endType}))
 
     @CachedCalled()
-    def find_job_id(self, title, salaries): # fixme 查询sub_title
-        return str(list(self.jobsCollection.find({'title': title, 'salaries': salaries}, {'_id': 1}))[0]['_id'])
+    def find_job_id(self, title, salaries):
+        try:
+            cursor = self.jobsCollection.find({'sub_title': {'$all': [title]}})
+            return str(cursor[0]['_id'])
+        except IndexError:
+            cursor = self.jobsCollection.find({'title': title, 'salaries': salaries})
+            return str(cursor[0]['_id']) if len(cursor) > 0 else ''
 
     def output(self, data):
       # writer
