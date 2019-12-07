@@ -60,7 +60,11 @@ class Engine:
     def check_list(self, checkInfo):
         d = self.d
         mongo = BossMongo()
-        d(resourceId="com.hpbr.bosszhipin:id/ll_tab_3").click()
+        tabItem = d(resourceId="com.hpbr.bosszhipin:id/ll_tab_3")
+        if tabItem.exists is not True:
+            d.press('back')
+            time.sleep(3)
+        tabItem.click()
         time.sleep(2)
         filters = self.get_filters()
         print(filters)
@@ -150,3 +154,4 @@ cli.add_command(check_one_list)
 
 if __name__ == "__main__":
     cli()
+    # engine.check_list(False)

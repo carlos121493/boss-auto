@@ -175,7 +175,7 @@ class Detail(Base):
         keys = info.keys()
         info['time'] = time.mktime(datetime.date.today().timetuple())
         if 'asked' in keys or 'wx' in keys or 'phone' in keys:
-            self.mongo.insert_employees([info])
+            self.mongo.update_employ(info)
 
     def start(self):
         time.sleep(2)

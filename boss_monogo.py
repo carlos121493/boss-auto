@@ -2,7 +2,7 @@
 
 from pymongo import MongoClient
 from pymongo.errors import BulkWriteError
-from util import CachedCalled, decTime
+from util import CachedCalled, decTime, getDBURI
 import time
 import json
 import os
@@ -14,7 +14,8 @@ root = os.getcwd()
 
 class BossMongo:
     def __init__(self):
-        client = MongoClient(host='127.0.0.1', port=27017)
+        client = MongoClient(host=getDBURI())
+        # client = MongoClient(host='127.0.0.1', port=27017)
         db = client['employ']
         self.jobsCollection = db['jobs']
         self.employCollection = db['employees']
@@ -24,6 +25,9 @@ class BossMongo:
 
     def update_job(self, query, new):
         self.jobsCollection.update_one(query, {'$set': new})
+
+    def update_employ(self, employee):
+        self.employCollection.update_one({ 'title': employee['name'], time: employee['time']}, employee, true)
 
     def insert_employees(self, employees):
         try:
@@ -152,6 +156,7 @@ class BossMongo:
             return str(cursor[0]['_id'])
         except IndexError:
             cursor = self.jobsCollection.find({'title': title, 'salaries': salaries})
+            cursor = list(cursor)
             return str(cursor[0]['_id']) if len(cursor) > 0 else ''
 
     def output(self, data):
@@ -160,7 +165,7 @@ class BossMongo:
 
 
 if __name__ == "__main__":
-    pass
+    mongo = BossMongo()
     # 保存到excel
     # employees = mongo.employCollection.find({'job_type': {'$in': ['管培生', '实习生', '外卖骑手']}})
     # mongo.save_excel('xiao', [('外卖骑手', mongo.rename_columns(pd.DataFrame(list(employees))))])

@@ -36,7 +36,7 @@ class List(Base):
         try:
             first_item = items[0].child(resourceId='com.hpbr.bosszhipin:id/tv_name')
             return first_item.get_text() if first_item.exists else ''
-        except
+        except:
             return ''
 
     def getItem(self):

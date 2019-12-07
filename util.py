@@ -4,6 +4,23 @@ from functools import wraps
 from tenacity import retry, stop_after_attempt
 from adbutils.errors import AdbError
 import uiautomator2 as u2
+import configparser
+import os
+
+def getConfig(section):
+	#获取配置信息
+    config = configparser.ConfigParser()
+    root = os.path.dirname(__file__)
+    config.read(os.path.join(root, 'config.ini'), encoding='utf8')
+    return config[section]
+
+def getDBURI():
+    config = getConfig('ONLINE')
+    uri = 'mongodb://'
+    if 'userName' in config and 'password' in config:
+        uri = uri + config['userName'] + ':' + config['password'] + '@'
+    uri = uri + config['host'] + ':' + config['port'] + '/' + config['DBName']
+    return uri
 
 def decTime(fn):
     @wraps(fn)
@@ -62,4 +79,3 @@ class CachedCalled:
             self.cache[key] = value
             return value
         return innerFn
-
