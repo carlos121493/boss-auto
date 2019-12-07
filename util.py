@@ -1,6 +1,9 @@
 import time
+import os
 from functools import wraps
-
+from tenacity import retry, stop_after_attempt
+from adbutils.errors import AdbError
+import uiautomator2 as u2
 
 def decTime(fn):
     @wraps(fn)
@@ -12,6 +15,17 @@ def decTime(fn):
         print('{0} 耗时 {1}'.format(name, end - start))
         return temp
     return innerFn
+
+@retry(stop=stop_after_attempt(2))
+def connect():
+    try:
+        d = u2.connect('127.0.0.1:7555')
+        return d
+    except AdbError:
+        os.popen('adb connect 127.0.0.1:7555')
+        print('链接失败，尝试重连中...')
+        print(AdbError)
+        raise AdbError
 
 
 class LazyProperty(object):

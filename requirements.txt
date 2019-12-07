@@ -2,3 +2,5 @@ pymongo==3.9.0
 pandas==0.25.1
 uiautomator2==2.2.0
 Click==7.0
+adbutils==0.6.2
+tenacity==6.0.0

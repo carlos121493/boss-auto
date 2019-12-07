@@ -9,13 +9,13 @@ import os
 import json
 import datetime
 import pandas as pd
-from util import decTime
+from util import decTime, connect
 
 now = time.mktime(datetime.date.today().timetuple())
 
 class Engine:
     def __init__(self):
-        d = u2.connect('127.0.0.1:7555')
+        d = connect()
         d.app_start('com.hpbr.bosszhipin')
         d.wait_timeout = 3.0
         self.d = d
@@ -28,10 +28,12 @@ class Engine:
         mongo = BossMongo()
         mongo.insert_jobs(jobs)
 
+    @decTime
     def remove_jobs(self):
         job = Job(self.d)
         job.clean()
     
+    @decTime
     def add_jobs(self):
         d = self.d
         job = Job(d)
@@ -68,7 +70,8 @@ class Engine:
                 time.sleep(3)
         if checkInfo and len(items):
             mongo.insert_employees(items)
-        
+    
+    @decTime   
     def export_2_excel(self, f):
         mongo = BossMongo()
         jobs = mongo.get_from_employees(f)
