@@ -54,6 +54,10 @@ class List(Base):
         if ':' not in timeInfo:
             return True
 
+        # 最后一页会重复
+        if name in self.allList:
+            return True
+
         # 只看红点模式下不管
         child = item.child(resourceId='com.hpbr.bosszhipin:id/tv_not_read_count')
         if self.checkInfo is False and bool(child.exists) is False:
@@ -175,9 +179,10 @@ if __name__ == "__main__":
     # print(list.getInfos())
     # mongo.insert_employees(list.getInfos())
     mongo = BossMongo()
-    lists = List(d, '管培生', checkInfo=True)
+    lists = List(d, '高级测试专家', checkInfo=True)
     infos = lists.getInfos()
     print(len(infos))
-    if len(infos):
-        mongo.insert_employees(infos)
+    # print(len(infos))
+    # if len(infos):
+    #     mongo.insert_employees(infos)
     d.press("back")
