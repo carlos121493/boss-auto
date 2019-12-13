@@ -41,6 +41,7 @@ def connect():
     except AdbError:
         os.popen('adb connect 127.0.0.1:7555')
         print('链接失败，尝试重连中...')
+        time.sleep(10)
         print(AdbError)
         raise AdbError
 
