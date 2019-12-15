@@ -25,12 +25,11 @@ class Base:
         try:
             self.getDetail()
             ending = self.isEnding()
-            self.container.scroll.vert.backward(steps=60)
-            time.sleep(3)
+            
             if ending is not True:
+                self.container.scroll.vert.backward(steps=60)
+                time.sleep(3)
                 return self.scroll(start=False)
-            elif start is not True:
-                return self.getDetail()  # 如果是一页的话，需要考虑
         except UiObjectNotFoundError:
             cancel = self.browser(resourceId="com.hpbr.bosszhipin:id/tv_cancel")
             if cancel.exists:
