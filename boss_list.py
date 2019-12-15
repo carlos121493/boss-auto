@@ -31,7 +31,7 @@ class List(Base):
         self.start()
         time.sleep(1)
 
-    def scrollToEnd():
+    def scrollToEnd(self):
         self.container.scroll.vert.toEnd()
 
     def getFirstName(self):
@@ -95,7 +95,7 @@ class List(Base):
                 if self.checkInvalide(name, item):
                     continue
                 else:
-                    if slef.checkInfo is False:
+                    if self.checkInfo is False:
                         print('name:{0}'.format(name))
                     self.currentList.append(name)
                     item.click()
