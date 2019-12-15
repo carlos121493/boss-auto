@@ -1,7 +1,7 @@
 from boss_monogo import BossMongo
 from job import Job
 from detail import Detail
-from boss_list import List 
+from boss_list import List, ListAll
 import uiautomator2 as u2
 import click
 import time
@@ -55,6 +55,24 @@ class Engine:
         d = self.d
         lists = List(d)
         print('检查数量: {0}'.format(len(lists.getInfos())))
+
+    @decTime
+    def check_all_list(self, checkInfo):
+        d = self.d
+        mongo = BossMongo()
+        tabItem = d(resourceId="com.hpbr.bosszhipin:id/ll_tab_3")
+        if bool(tabItem.exists) is not True:
+            d.press('back')
+            time.sleep(3)
+        inCurrent = d(text="搜索联系人")
+        if bool(inCurrent.exists) is not True:
+            tabItem.click()
+            time.sleep(2)
+        lists = ListAll(d, None, checkInfo=checkInfo)
+        infos = lists.getInfos()
+        print('检查数量: {0}'.format(len(infos)))
+        if checkInfo and len(infos):
+            mongo.insert_employees(infos)
 
     @decTime
     def check_list(self, checkInfo):
@@ -117,9 +135,13 @@ def add_jobs():
 
 @click.command()
 @click.option('--check', '-c', type=bool, default=False)
-def boss_list(check):
+@click.option('--fil', '-f', type=bool, default=False)
+def boss_list(check, fil):
     '''过一遍列表，默认只看小红点内的. 传入-c=True，将所有数据加入到数据库中'''
-    engine.check_list(check)
+    if fil:
+        engine.check_list(check)
+    else:
+        engine.check_all_list(check)
 
 @click.command()
 def save_detail():

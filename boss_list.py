@@ -19,16 +19,20 @@ class List(Base):
           self.container = browser(resourceId='com.hpbr.bosszhipin:id/contact_ll')
           self.firstName = self.getFirstName()
           
+        self.checked = []
         self.currentList = []
         self.lastList = []
         self.allList = []
         self.alldetails = []
         self.checkInfo = checkInfo
         self.time = now
-        self.container.scroll.vert.toEnd()
+        self.scrollToEnd()
         time.sleep(2)
         self.start()
         time.sleep(1)
+
+    def scrollToEnd():
+        self.container.scroll.vert.toEnd()
 
     def getFirstName(self):
         self.container.scroll.vert.toBeginning()
@@ -43,12 +47,20 @@ class List(Base):
         '''识别每一项'''
         return self.container.child(resourceId='com.hpbr.bosszhipin:id/rl_content_view')
 
+    def scroll(self, start=True):
+        self.checked = []
+        super().scroll(start)
+
     def cleanCaches(self):
         self.allList.extend(self.currentList)
         self.lastList = self.currentList.copy()
         self.currentList = []
 
-    def checkInvalide(self, name, item):
+    def checkInvalide(self, name, item, force=False):
+        if name is None or name in self.checked:
+            return True
+
+        self.checked.append(name)
         # 不是今天的数据不管
         timeInfo = item.child(resourceId='com.hpbr.bosszhipin:id/tv_time').get_text()
         if ':' not in timeInfo:
@@ -60,7 +72,7 @@ class List(Base):
 
         # 只看红点模式下不管
         child = item.child(resourceId='com.hpbr.bosszhipin:id/tv_not_read_count')
-        if self.checkInfo is False and bool(child.exists) is False:
+        if (force is False and self.checkInfo is False) and bool(child.exists) is False:
             return True
         return name in self.lastList or name in self.currentList
 
@@ -82,12 +94,15 @@ class List(Base):
                 name = self.getText(item.child(resourceId='com.hpbr.bosszhipin:id/tv_name'))
                 if self.checkInvalide(name, item):
                     continue
-                self.currentList.append(name)
-                item.click()
-                time.sleep(1)
-                self.employeeDetail()
-                time.sleep(1)
-                d.press("back")
+                else:
+                    if slef.checkInfo is False:
+                        print('name:{0}'.format(name))
+                    self.currentList.append(name)
+                    item.click()
+                    time.sleep(1)
+                    self.employeeDetail()
+                    time.sleep(1)
+                    d.press("back")
         self.cleanCaches()
 
     def isEnding(self):
@@ -105,42 +120,30 @@ class List(Base):
 
 
 class ListAll(List):
-    def __init__(self, browser, name, checkInfo=True): 
+    def __init__(self, browser, name, checkInfo=False): 
         self.container = browser(className='android.widget.ExpandableListView')
-        mongo = BossMongo()
-        self.names = [stack['name'] for stack in list(mongo.employCollection.find({}, { '_id': 0, 'name': 1 }))]
+        # self.names = [stack['name'] for stack in list(mongo.employCollection.find({}, { '_id': 0, 'name': 1 }))]
         self.firstName = '筛选'
         super().__init__(browser, name, checkInfo)
+
+    def checkInvalide(self, name, item):
+        superCheck = super().checkInvalide(name, item, force=True)
+        if superCheck:
+            return True
+
+        child = item.child(resourceId='com.hpbr.bosszhipin:id/tv_none_read')
+        return self.checkInfo is False and bool(child.exists) is False
+        
+    def scrollToEnd(self):
+        '''找到开始起点位置'''
+        hasLastItem = self.browser(text='昨天').exists
+        if bool(hasLastItem) is not True:
+            self.container.scroll.vert.forward()
+            self.scrollToEnd()
 
     def getItem(self):
         '''识别每一项'''
         return self.container.child(resourceId='com.hpbr.bosszhipin:id/mRootview')
-    
-    def checkInvalide(self, name, item):
-        # 在数据库里不管
-        if name in self.names:
-            return True
-        print(name)
-        # 只看红点模式下不管
-        child = item.child(resourceId='com.hpbr.bosszhipin:id/tv_none_read')
-        if self.checkInfo is False and bool(child.exists) is False:
-            return True
-        return super().checkInvalide(name, item) 
-
-    def getDetail(self):
-        items = self.getItem()
-        for item in items:
-            if item.exists:
-                name = self.getText(item.child(resourceId='com.hpbr.bosszhipin:id/tv_name'))
-                if self.checkInvalide(name, item):
-                    continue
-                self.currentList.append(name)
-                item.click()
-                time.sleep(1)
-                self.employeeDetail()
-                time.sleep(1)
-                d.press("back")
-        self.cleanCaches()
 
 if __name__ == "__main__":
     import uiautomator2 as u2
@@ -178,11 +181,11 @@ if __name__ == "__main__":
     # list = ListAll(d, None, '5de078141e7c2bb87fe6b44c')
     # print(list.getInfos())
     # mongo.insert_employees(list.getInfos())
-    mongo = BossMongo()
-    lists = List(d, '高级测试专家', checkInfo=True)
+    # mongo = BossMongo()
+    lists = ListAll(d, None, checkInfo=False)
     infos = lists.getInfos()
     print(len(infos))
     # print(len(infos))
     # if len(infos):
     #     mongo.insert_employees(infos)
-    d.press("back")
+    # d.press("back")
