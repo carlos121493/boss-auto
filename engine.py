@@ -10,6 +10,8 @@ import json
 import datetime
 import pandas as pd
 from util import decTime, connect
+import schedule
+from functools import partial
 
 now = time.mktime(datetime.date.today().timetuple())
 
@@ -166,6 +168,13 @@ def export_excel(f):
         return print('请输入需求供应方')
     engine.export_2_excel(f)
 
+@click.command()
+def plan():
+    schedule.every(5).to(10).minutes.do(partial(engine.check_all_list(False)))
+    schedule.every().day.at("20:00").do(partial(engine.check_all_list(True)))
+    schedule.every().day.at("20:30").do(partial(engine.export_2_exce('兔子')))
+    schedule.every().day.at("20:30").do(partial(engine.export_2_exce('nico')))
+
 cli.add_command(add_jobs)
 cli.add_command(boss_list)
 cli.add_command(save_detail)
@@ -173,6 +182,7 @@ cli.add_command(export_excel)
 cli.add_command(remove_jobs)
 cli.add_command(import_jobs)
 cli.add_command(check_one_list)
+cli.add_command(plan)
 
 if __name__ == "__main__":
     cli()
