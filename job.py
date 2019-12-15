@@ -236,8 +236,10 @@ class Job:
         if start_btn.exists:
             start_btn.click()
             time.sleep(2)
-        d(resourceId="com.hpbr.bosszhipin:id/tv_continue").click()
-        time.sleep(2)
+        countinue_btn = d(resourceId='com.hpbr.bosszhipin:id/tv_continue')
+        if countinue_btn.exists:
+            countinue_btn.click()
+            time.sleep(2)
 
     def add_template_job(self, job, title):
         j = job.copy()
