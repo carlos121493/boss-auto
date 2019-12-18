@@ -1,7 +1,7 @@
 from boss_monogo import BossMongo
 from job import Job
 from detail import Detail
-from boss_list import List, ListAll
+from boss_list import List, ListAll, ListLastDay
 import uiautomator2 as u2
 import click
 import time
@@ -52,6 +52,11 @@ class Engine:
         d(resourceId="com.hpbr.bosszhipin:id/confirm").click()
         return filter_list
     
+    @decTime
+    def check_last_list(self):
+        lists = ListLastDay(self.d)
+        print('检查昨日数量: {0}'.format(len(lists.getInfos())))
+
     @decTime
     def check_one_list(self):
         d = self.d
@@ -170,10 +175,16 @@ def export_excel(f):
 
 @click.command()
 def plan():
-    schedule.every(5).to(10).minutes.do(partial(engine.check_all_list(False)))
-    schedule.every().day.at("20:00").do(partial(engine.check_all_list(True)))
-    schedule.every().day.at("20:30").do(partial(engine.export_2_exce('兔子')))
-    schedule.every().day.at("20:30").do(partial(engine.export_2_exce('nico')))
+    engine.check_last_list()
+    schedule.every(15).to(20).minutes.do(partial(engine.check_all_list, False))
+    schedule.every().day.at("21:40").do(partial(engine.check_all_list, True))
+    schedule.every().day.at("21:50").do(partial(engine.export_2_excel, '兔子'))
+    schedule.every().day.at("21:50").do(partial(engine.export_2_excel, 'nico'))
+    schedule.every().day.at("21:50").do(partial(engine.remove_jobs))
+    schedule.every().day.at("21:55").do(partial(engine.add_jobs))
+    while datetime.datetime.now().hour < 22:
+        schedule.run_pending()
+        time.sleep(60*5)
 
 cli.add_command(add_jobs)
 cli.add_command(boss_list)

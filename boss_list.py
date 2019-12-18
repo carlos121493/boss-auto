@@ -19,6 +19,7 @@ class List(Base):
           self.container = browser(resourceId='com.hpbr.bosszhipin:id/contact_ll')
           self.firstName = self.getFirstName()
           
+        self.container.scroll.toBeginning()
         self.checked = []
         self.currentList = []
         self.lastList = []
@@ -136,6 +137,7 @@ class ListAll(List):
         
     def scrollToEnd(self):
         '''找到开始起点位置'''
+        # self.container.child_by_text('昨天', allow_scroll_search=True, className="com.hpbr.bosszhipin:id/tv_time")
         hasLastItem = self.browser(text='昨天').exists
         if bool(hasLastItem) is not True:
             self.container.scroll.vert.forward()
@@ -145,47 +147,27 @@ class ListAll(List):
         '''识别每一项'''
         return self.container.child(resourceId='com.hpbr.bosszhipin:id/mRootview')
 
+class ListLastDay(ListAll):
+    def __init__(self, browser):
+        super().__init__(browser, None, True)
+
+    def scrollToEnd(self):
+        '''找到开始起点位置'''
+        try:
+            childs = self.getItem()
+            lastChild = childs[len(childs) - 1].child(resourceId="com.hpbr.bosszhipin:id/tv_time")
+            lastText = lastChild.get_text()
+            if '月' not in lastText:
+                self.container.scroll.vert.forward()
+                self.scrollToEnd()
+        except:
+            print('ok')
+
 if __name__ == "__main__":
     import uiautomator2 as u2
 
     d = u2.connect('127.0.0.1:7555')
     d.app_start('com.hpbr.bosszhipin')
     d.wait_timeout = 3.0
-    # d(resourceId="com.hpbr.bosszhipin:id/ll_tab_3").click()
 
-    # def init_items():
-    #     filter_list = []
-    #     d(resourceId="com.hpbr.bosszhipin:id/container").scroll.vert.toBeginning()
-    #     d(resourceId="com.hpbr.bosszhipin:id/filter_tv").click()
-    #     items = d(resourceId="com.hpbr.bosszhipin:id/chat_filter_name_tv", text="沟通职位").sibling(resourceId='com.hpbr.bosszhipin:id/chat_filter_name_rv').child(resourceId='com.hpbr.bosszhipin:id/cb_selector')
-    #     filter_list = [item.get_text() for item in items if item.get_text() != '全部']
-    #     d(resourceId="com.hpbr.bosszhipin:id/confirm").click()
-    #     return filter_list
-
-    # # 筛选后
-    # filters = init_items()
-    # print(filters)
-    # if len(filters):
-    #   for filter in filters:
-    #       list = List(d, filter, '5de078141e7c2bb87fe6b44c')
-    #       mongo = BossMongo()
-    #       print(list.getInfos())
-    #       mongo.insert_employees(list.getInfos())
-    # d.press("back")
-    
-    # 只有红点
-    # list = List(d, '项目经理', '5de078141e7c2bb87fe6b44c', checkInfo=False)
-
-    # 所有
-    # mongo = BossMongo()
-    # list = ListAll(d, None, '5de078141e7c2bb87fe6b44c')
-    # print(list.getInfos())
-    # mongo.insert_employees(list.getInfos())
-    # mongo = BossMongo()
-    lists = ListAll(d, None, checkInfo=False)
-    infos = lists.getInfos()
-    print(len(infos))
-    # print(len(infos))
-    # if len(infos):
-    #     mongo.insert_employees(infos)
-    # d.press("back")
+    ListLastDay(d)
