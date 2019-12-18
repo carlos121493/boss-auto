@@ -19,7 +19,11 @@ class Detail(Base):
         return self.container.child(className='android.widget.LinearLayout')
 
     def sex(self):
-        info = self.browser.screenshot().crop((101, 380, 102, 381))
+        d = self.browser
+        info = d(resourceId="com.hpbr.bosszhipin:id/iv_gender").info['bounds']
+        x = info['left'] + 6
+        y = info['top'] + 4
+        info = d.screenshot().crop((x, y, x + 1, y + 1))
         blue = info.getcolors(1)[0][1][2]
         return '男' if blue == 255 else '女'
 
