@@ -177,9 +177,11 @@ class Job:
     def add_job(self, resource):
         d = self.browser
         if d(text=resource['title']).exists:
-            return    
-        d(resourceId="com.hpbr.bosszhipin:id/btn_post_job").click()
-        time.sleep(3)
+            return
+        post_btn = d(resourceId="com.hpbr.bosszhipin:id/btn_post_job")
+        if post_btn.exists:
+            post_btn.click()
+            time.sleep(3)
         negative = d(text='重新发布')
         if negative.exists:
             negative.click()
