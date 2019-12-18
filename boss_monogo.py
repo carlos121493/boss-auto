@@ -9,7 +9,7 @@ import os
 import datetime
 import pandas as pd
 
-now = time.mktime(datetime.date.today().timetuple())
+now = time.mktime((datetime.date.today()).timetuple())
 root = os.getcwd()
 
 class BossMongo:
@@ -134,6 +134,9 @@ class BossMongo:
     def save_excel(self, f, datas):
         excelPath = os.path.join(root, 'jobs-{0}.xlsx'.format(f))
         writer = pd.ExcelWriter(excelPath)
+        if os.path.exists(excelPath):
+            os.remove(excelPath)
+
         for (sheetName, data) in datas:
             data.to_excel(writer, sheet_name=sheetName, startcol=0, index=False)
         writer.save()
@@ -167,8 +170,8 @@ class BossMongo:
 if __name__ == "__main__":
     mongo = BossMongo()
     # 保存到excel
-    # employees = mongo.employCollection.find({'job_type': {'$in': ['管培生', '实习生', '外卖骑手']}})
-    # mongo.save_excel('xiao', [('外卖骑手', mongo.rename_columns(pd.DataFrame(list(employees))))])
+    employees = mongo.employCollection.find({'job_type': {'$in': ['外卖骑手']}})
+    mongo.save_excel('waimai', [('外卖骑手', mongo.rename_columns(pd.DataFrame(list(employees))))])
     
     # 插入jobs
     # jobFile = os.path.relpath('jobs.json', '.')
