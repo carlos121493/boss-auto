@@ -29,7 +29,8 @@ class Base:
             if ending is not True:
                 self.container.scroll.vert.backward(steps=60)
                 time.sleep(3)
-                return self.scroll(start=False)
+                self.scroll(start=False)
+                return
         except UiObjectNotFoundError:
             cancel = self.browser(resourceId="com.hpbr.bosszhipin:id/tv_cancel")
             if cancel.exists:
