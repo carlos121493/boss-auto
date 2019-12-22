@@ -8,16 +8,19 @@ from uiautomator2.exceptions import UiObjectNotFoundError
 now = time.mktime(datetime.date.today().timetuple())
 class List(Base):
 
-    def __init__(self, browser, name=None, checkInfo = False):
+    def __init__(self, browser, name=None, checkInfo=False, before=0):
         self.browser = browser
+        tabItem = browser(resourceId="com.hpbr.bosszhipin:id/ll_tab_3")
+        if tabItem.exists:
+            tabItem.click()
         if name:
-          browser(resourceId="com.hpbr.bosszhipin:id/filter_tv").click()
-          browser(resourceId="com.hpbr.bosszhipin:id/cb_selector", text=name).click()
-          browser(resourceId="com.hpbr.bosszhipin:id/confirm").click()
+            browser(resourceId="com.hpbr.bosszhipin:id/filter_tv").click()
+            browser(resourceId="com.hpbr.bosszhipin:id/cb_selector", text=name).click()
+            browser(resourceId="com.hpbr.bosszhipin:id/confirm").click()
           
         if self.container is None:
-          self.container = browser(resourceId='com.hpbr.bosszhipin:id/contact_ll')
-          self.firstName = self.getFirstName()
+            self.container = browser(resourceId='com.hpbr.bosszhipin:id/contact_ll')
+            self.firstName = self.getFirstName()
           
         self.container.scroll.toBeginning()
         self.checked = []
@@ -26,6 +29,7 @@ class List(Base):
         self.allList = []
         self.alldetails = []
         self.checkInfo = checkInfo
+        self.before = before
         self.time = now
         self.scrollToEnd()
         time.sleep(2)
@@ -57,15 +61,30 @@ class List(Base):
         self.lastList = self.currentList.copy()
         self.currentList = []
 
+    def isEnd(self, before, timeInfo):
+        b = int(before)
+        judge = False
+        if b >= 0:
+            judge = ':' not in timeInfo
+            if judge is True and b >= 1:
+                judge = '昨天' != timeInfo
+                if judge is True and b > 1 and '月' in timeInfo:
+                    now = datetime.datetime.now()
+                    judge_time = datetime.datetime.strptime('2019年' + timeInfo, r'%Y年%m月%d日')
+                    judge_date = now - datetime.timedelta(b)
+                    judge = judge_time < judge_date
+        return judge is not False
+
     def checkInvalide(self, name, item, force=False):
         if name is None or name in self.checked:
             return True
 
         self.checked.append(name)
         # 不是今天的数据不管
-        timeInfo = item.child(resourceId='com.hpbr.bosszhipin:id/tv_time').get_text()
-        if ':' not in timeInfo:
-            return True
+        # timeInfo = item.child(resourceId='com.hpbr.bosszhipin:id/tv_time').get_text()
+        # timeDisable = self.isEnd(self.before, timeInfo)
+        # if timeDisable:
+        #     return timeDisable
 
         # 最后一页会重复
         if name in self.allList:
@@ -121,11 +140,11 @@ class List(Base):
 
 
 class ListAll(List):
-    def __init__(self, browser, name, checkInfo=False): 
+    def __init__(self, browser, name, checkInfo=False, before=0): 
         self.container = browser(className='android.widget.ExpandableListView')
         # self.names = [stack['name'] for stack in list(mongo.employCollection.find({}, { '_id': 0, 'name': 1 }))]
         self.firstName = '筛选'
-        super().__init__(browser, name, checkInfo)
+        super().__init__(browser, name, checkInfo, before)
 
     def checkInvalide(self, name, item):
         superCheck = super().checkInvalide(name, item, force=True)
@@ -134,12 +153,16 @@ class ListAll(List):
 
         child = item.child(resourceId='com.hpbr.bosszhipin:id/tv_none_read')
         return self.checkInfo is False and bool(child.exists) is False
-        
+    
     def scrollToEnd(self):
         '''找到开始起点位置'''
-        # self.container.child_by_text('昨天', allow_scroll_search=True, className="com.hpbr.bosszhipin:id/tv_time")
-        hasLastItem = self.browser(text='昨天').exists
-        if bool(hasLastItem) is not True:
+        stopScroll = False
+        childs =   childs = self.getItem()
+        item = childs[len(childs) - 1].child(resourceId="com.hpbr.bosszhipin:id/tv_time")
+        if item.exists:
+            timeInfo = item.get_text()
+            stopScroll = self.isEnd(int(self.before) + 1, timeInfo)
+        if stopScroll is not True:
             self.container.scroll.vert.forward()
             self.scrollToEnd()
 

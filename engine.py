@@ -64,7 +64,7 @@ class Engine:
         print('检查数量: {0}'.format(len(lists.getInfos())))
 
     @decTime
-    def check_all_list(self, checkInfo):
+    def check_all_list(self, checkInfo, before=0):
         d = self.d
         mongo = BossMongo()
         tabItem = d(resourceId="com.hpbr.bosszhipin:id/ll_tab_3")
@@ -75,14 +75,14 @@ class Engine:
         if bool(inCurrent.exists) is not True:
             tabItem.click()
             time.sleep(2)
-        lists = ListAll(d, None, checkInfo=checkInfo)
+        lists = ListAll(d, None, checkInfo=checkInfo, before=before)
         infos = lists.getInfos()
         print('检查数量: {0}'.format(len(infos)))
         if checkInfo and len(infos):
             mongo.insert_employees(infos)
 
     @decTime
-    def check_list(self, checkInfo):
+    def check_list(self, checkInfo, before=0):
         d = self.d
         mongo = BossMongo()
         tabItem = d(resourceId="com.hpbr.bosszhipin:id/ll_tab_3")
@@ -96,7 +96,7 @@ class Engine:
         items = []
         if len(filters):
             for filt in filters:
-                lists = List(d, filt, checkInfo=checkInfo)
+                lists = List(d, filt, checkInfo=checkInfo, before=before)
                 infos = lists.getInfos()
                 print('{0}检查数量: {1}'.format(filt, len(infos)))
                 if len(infos) and checkInfo:
@@ -141,14 +141,15 @@ def add_jobs():
     engine.add_jobs()
 
 @click.command()
-@click.option('--check', '-c', type=bool, default=False)
-@click.option('--fil', '-f', type=bool, default=False)
-def boss_list(check, fil):
+@click.option('--check', '-c', type=bool, default=False, help='是否将数据加到数据库')
+@click.option('--fil', '-f', type=bool, default=False, help='是否过滤，默认不过滤职位')
+@click.option('--before', '-b', type=int, default=0, help='取N天内的数据，默认取今年')
+def boss_list(check, fil, before):
     '''过一遍列表，默认只看小红点内的. 传入-c=True，将所有数据加入到数据库中'''
     if fil:
-        engine.check_list(check)
+        engine.check_list(check, before)
     else:
-        engine.check_all_list(check)
+        engine.check_all_list(check, before)
 
 @click.command()
 def save_detail():
@@ -175,13 +176,13 @@ def export_excel(f):
 
 @click.command()
 def plan():
-    engine.check_last_list()
-    schedule.every(15).to(20).minutes.do(partial(engine.check_all_list, False))
+    schedule.every(15).to(20).minutes.do(partial(engine.check_all_list, False, 1)) # 由于列表会动态变化，比较麻烦
     schedule.every().day.at("21:40").do(partial(engine.check_all_list, True))
-    schedule.every().day.at("21:50").do(partial(engine.export_2_excel, '兔子'))
-    schedule.every().day.at("21:50").do(partial(engine.export_2_excel, 'nico'))
+    schedule.every().day.at("21:48").do(partial(engine.export_2_excel, '兔子'))
+    schedule.every().day.at("21:48").do(partial(engine.export_2_excel, 'nico'))
     schedule.every().day.at("21:50").do(partial(engine.remove_jobs))
     schedule.every().day.at("21:55").do(partial(engine.add_jobs))
+    schedule.every().day.at("21:58").do(partial(engine.add_jobs))
     while datetime.datetime.now().hour < 22:
         schedule.run_pending()
         time.sleep(60*5)
@@ -196,5 +197,6 @@ cli.add_command(check_one_list)
 cli.add_command(plan)
 
 if __name__ == "__main__":
-    cli()
+    engine.check_all_list(False, 4)
+    # cli()
     # engine.add_detail()
