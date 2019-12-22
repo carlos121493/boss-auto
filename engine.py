@@ -107,9 +107,10 @@ class Engine:
             mongo.insert_employees(items)
     
     @decTime   
-    def export_2_excel(self, f):
+    def export_2_excel(self, f, before=0):
         mongo = BossMongo()
-        jobs = mongo.get_from_employees(f)
+        now = time.mktime((datetime.date.today()-datetime.timedelta(before)).timetuple())
+        jobs = mongo.get_from_employees(f, now)
         items = []
         for job in jobs:
             items.append((job['title'], mongo.rename_columns(pd.DataFrame(job['employees']))))
@@ -168,11 +169,12 @@ def remove_jobs():
 
 @click.command()
 @click.option('-f')
-def export_excel(f):
+@click.option('--before', '-b', type=int, default=0, help='导出N天前的数据')
+def export_excel(f, before):
     '''将当天的职位导出到本地的jobs.xlsx中'''
     if f is None:
         return print('请输入需求供应方')
-    engine.export_2_excel(f)
+    engine.export_2_excel(f, before)
 
 @click.command()
 def plan():
