@@ -72,7 +72,7 @@ class Engine:
             d.press('back')
             time.sleep(3)
         inCurrent = d(text="搜索联系人")
-        if bool(inCurrent.exists) is not True:
+        if bool(tabItem.exists) == True and bool(inCurrent.exists) is not True:
             tabItem.click()
             time.sleep(2)
         lists = ListAll(d, None, checkInfo=checkInfo, before=before)

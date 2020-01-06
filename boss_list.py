@@ -157,14 +157,19 @@ class ListAll(List):
     def scrollToEnd(self):
         '''找到开始起点位置'''
         stopScroll = False
-        childs =   childs = self.getItem()
+        childs = childs = self.getItem()
         item = childs[len(childs) - 1].child(resourceId="com.hpbr.bosszhipin:id/tv_time")
-        if item.exists:
-            timeInfo = item.get_text()
-            stopScroll = self.isEnd(int(self.before) + 1, timeInfo)
-        if stopScroll is not True:
+        try:
+            if item.exists:
+                timeInfo = item.get_text() # 逻辑居然会出错，不知道发生了什么，防御一下
+                stopScroll = self.isEnd(int(self.before) + 1, timeInfo)
+            if stopScroll is not True:
+                self.container.scroll.vert.forward()
+                self.scrollToEnd()
+        except UiObjectNotFoundError:
             self.container.scroll.vert.forward()
             self.scrollToEnd()
+        
 
     def getItem(self):
         '''识别每一项'''
